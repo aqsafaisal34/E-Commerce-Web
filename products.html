@@ -47,10 +47,17 @@
 
 
     <script>
+        let baseUrl;
+
+if (window.location.href.indexOf("https") === -1) {
+    baseUrl = "http://localhost:3000";
+} else {
+    baseUrl = "https://e-commerce-web-crud-operation.herokuapp.com/";
+}
 
         async function getAllProduct() {
             try {
-                const response = await axios.get("http://localhost:3000/products");
+                const response = await axios.get(baseUrl + "/products");
                 console.log(response.data.data);
 
                 let productsListDiv = document.querySelector("#productsListDiv")
