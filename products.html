@@ -7,225 +7,141 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <!-- <script src="./libs/axios.min.js"></script> -->
-
     <style>
-        #productsListDiv {
+        body {
+            padding: 0;
+            margin: 0;
+            background-color: #F2F2F2;
+
+        }
+
+        .productList {
             display: flex;
+            justify-content: space-around;
+
             flex-wrap: wrap;
         }
 
-        #productsListDiv>div {
-            border: 1px solid black;
-            width: 220px;
-            padding: 10px;
+        div>div {
+            display: flex;
+            border: 2px solid white;
+            flex-direction: column;
+            width: 270px;
+            padding: 5px;
             margin: 10px;
+            background-color: white;
             border-radius: 5px;
-            font-family: Verdana, sans-serif;
+            flex-wrap: wrap;
         }
 
-        #productsListDiv>div:hover {
-            box-shadow: 0px 0px 10px black;
+        div>p>span:last-child {
+            font-size: 25px;
+            font-family: sans-serif;
+            padding: 3px;
+            color: black;
         }
 
-        #productsListDiv>div>p>span:nth-child(2) {
-            font-size: 32px;
+        div>div:hover {
+            box-shadow: 2px 2px 3px 5px #C7C7C7;
         }
 
-        .delete,
-        .edit {
+        p {
+            padding: 0;
+            margin: 7px;
+        }
+
+        button {
             color: red;
-            border-color: red;
-            border-radius: 5px;
+            border: red;
+            border-radius: 3px;
+        
         }
-
-        .updateForm {
-
-            position: fixed;
-            top: 0px;
-            left: 35%;
-            background-color: gray;
-            padding: 30px;
-
+        h1{
+            text-align: center;
         }
-
-        .updateForm>label,
-        .updateForm>input {
-            margin: 5px
-        }
+        
     </style>
-
 </head>
 
 <body>
-    <h1>Ali Express</h1>
-
-    <a href="./index.html">Home</a>
-    <a href="./products.html">All Products</a>
-
-
-    <div id="productsListDiv">
-    </div>
-
-
-    <div id="updateForm">
+    <h1>E-COMMERCE WEBSITE</h1>
+    <a href="product.html"> All Products </a>
+    <a href="index.html">Home</a>
+    <div class="productList">
 
     </div>
 
+</body>
+<script>
 
-    <script>
+let baseUrl;
 
-        let baseUrl;
+if (window.location.href.indexOf("https") === -1) {
+baseUrl = "http://localhost:3000";
+} else {
+baseUrl = "https://e-commerce-web-crud-operation.herokuapp.com/";
+} 
 
-        if (window.location.href.indexOf("https") === -1) {
-            baseUrl = "http://localhost:3000";
-        } else {
-            baseUrl = "https://e-commerce-web-crud-operation.herokuapp.com/";
-        }
+    getAllProducts();
 
-        async function getAllProducts() {
-            try {
-
-                const response = await axios.get(baseUrl + "/products");
+    function getAllProducts() {
+        axios.get(baseUrl +"/products")
+            .then(function (response) {
+                // handle success
                 console.log(response.data.data);
+                var productList = document.querySelector(".productList");
 
-                let productsListDiv = document.querySelector("#productsListDiv")
+                productList.innerHTML = "";
 
-                productsListDiv.innerHTML = "";
-                response.data.data.map(eachProduct => {
-
-                    productsListDiv.innerHTML +=
-                        `<div>
-          <img src="./img/airpod.webp" alt="">
-            <p> ${eachProduct.productName} </p>
-            <p> 
-                <span>${eachProduct.currencyCode}</span> 
-                <span>${eachProduct.productPrice}</span> 
-            </p>
-          <p> ${eachProduct.numberOfSale || 0} sold </p>
-          <p> ${(eachProduct.isFreeShipping) ? "free shipping" : "no free shipping"} </p>
-         <p>${eachProduct.shopName}</p>
-         <button class="delete" onclick="deleteProduct('${eachProduct._id}')">Delete</button>
-         <button class="edit" onclick="editProduct('${eachProduct._id}')">Edit</button>
+                response.data.data.map(eachproduct => {
+                    productList.innerHTML += `
+                 <div>
+                 <img src="images/airpod.webp" alt="">
+                    <p> ${eachproduct.productName}</p>
+                 <p><span>${eachproduct.currencyCode}</span><span>${eachproduct.productPrice}</span></p>
+                 <p>${eachproduct.numberOfSale}</p>
+               <p>${(eachproduct.isFreeShipping) ? "free shipping" : ""}</p>
+                 <p>${eachproduct.shopName}</p>
+                 <button class="delete" onclick="deleteProduct('${eachproduct._id}')">Delete</button> 
         </div>`
                 })
 
-            } catch (error) {
-                console.error(error);
-            }
-        }
-        getAllProducts();
-
-        async function deleteProduct(id) {
-            console.log("productId: ", id);
-
-            let response = await axios
-                .delete(`${baseUrl}/product/${id}`)
-                .catch(e => {
-                    console.log("error: ", e);
-                    return;
-                });
-
-            if (response) {
-                console.log('deleted');
-                getAllProducts();
-            }
-        }
-
-        async function editProduct(id) {
-            console.log("id: ", id);
-
-            let response = await axios
-                .get(`${baseUrl}/product/${id}`)
-                .catch(e => {
-                    console.log("error: ", e);
-                    return;
-                });
-
-            if (response) {
-                console.log('product: ', response.data.data);
-
-                let product = response.data.data;
-
-                document.querySelector("#updateForm").innerHTML = `
-                
-                <form class="updateForm" onsubmit="completeUpdate(); return false ">
-                    <label for="productId">Product Id</label>
-                    <input type="text" id="productId" value="${product._id}" disabled>
-                    <br>
-                    <label for="productName">Product Name</label>
-                    <input type="text" id="productName" value="${product.productName}" required>
-                    <br>
-                    <label for="productPrice">Product Price</label>
-                    <input type="number" id="productPrice" value="${product.productPrice}" required>
-                    <br>
-                    <label for="currencyCode">Currency Code</label>
-                    <input type="text" id="currencyCode" value="${product.currencyCode}" required>
-                    <br>
-                    <label for="numberOfSale">Number Of Sale</label>
-                    <input type="number" id="numberOfSale" value="${product.numberOfSale}" required>
-                    <br>
-                    <label for="rating">Product Rating</label>
-                    <input type="number" min="0" max="5" id="rating" value="${product.rating}" required>
-                    <br>
-                    <label for="isFreeShipping">Free Shipping</label>
-                    <select name="isFreeShipping" id="isFreeShipping">
-                        <option ${(product.isFreeShipping) ? "selected" : ""} value="true">Yes</option>
-                        <option ${(!product.isFreeShipping) ? "selected" : ""} value="false">No</option>
-                    </select>
-                    <br>
-                    <label for="shopName">shop Name</label>
-                    <input type="text" id="shopName" value="${product.shopName}" required>
-                    <br>
-                    <input type="submit" value="Complete Update">
-                </form>
-                `
 
 
 
-
-
-
-
-
-            }
-        }
-
-
-        function completeUpdate() {
-            let productId = document.querySelector("#productId").value;
-            let productName = document.querySelector("#productName").value;
-            let productPrice = document.querySelector("#productPrice").value;
-            let currencyCode = document.querySelector("#currencyCode").value;
-            let numberOfSale = document.querySelector("#numberOfSale").value;
-            let rating = document.querySelector("#rating").value;
-            let isFreeShipping = document.querySelector("#isFreeShipping").value;
-            let shopName = document.querySelector("#shopName").value;
-
-
-            axios.put(`${baseUrl}/product/${productId}`, {
-                productName,
-                productPrice,
-                currencyCode,
-                numberOfSale,
-                rating,
-                isFreeShipping,
-                shopName,
             })
-                .then(function (response) {
-                    console.log(response.data);
-                    document.querySelector("#updateForm").innerHTML = ``;
-                    getAllProducts();
-                })
-                .catch(function (error) {
-                    console.log(error.response.data);
-                });
+            .catch(function (error) {
+                // handle error
+                console.log(error);
+            })
+            .then(function () {
+                // always executed
+            });
+    }
+
+
+    function deleteProduct(_id) {
+
+        
+       
+        console.log("productid" + _id);
+     
+
+      
+         
+        axios.delete(`http://localhost:3000/product/${_id}`)  
+      .then(res => {  
+        console.log('delete successful');  
+        getAllProducts();
+        
+       
+      }) 
+      .catch(function (error) {
+                // handle error
+                console.log('error');
+            }) 
         }
 
-
-    </script>
-
-
-</body>
+</script>
 
 </html>
