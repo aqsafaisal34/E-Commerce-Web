@@ -14,21 +14,21 @@ const productSchema = new mongoose.Schema({
 });
 const productModel = mongoose.model('Product', productSchema);
 
-
 let app = express();
 app.use(express.json());
 app.use(cors());
 
+
 app.get("/products", async (req, res) => {
+
     let result = await productModel
         .find({})
         .exec()
         .catch(e => {
-            console.log("error in db:", e);
+            console.log("error in db: ", e);
             res.status(500).send({ message: "error in getting all products" });
             return
         })
-
 
     res.send({
         message: "all products success ",
@@ -36,7 +36,26 @@ app.get("/products", async (req, res) => {
     });
 });
 
+app.get("/product/:id", async (req, res) => {
+
+    let result = await productModel
+        .findOne({_id: req.params.id})
+        .exec()
+        .catch(e => {
+            console.log("error in db: ", e);
+            res.status(500).send({ message: "error in getting all products" });
+            return
+        })
+
+    res.send({
+        message: "all products success ",
+        data: result
+    });
+});
+
+
 app.post("/product", async (req, res) => {
+
     let body = req.body;
 
     if (
@@ -61,6 +80,7 @@ app.post("/product", async (req, res) => {
         })
         return;
     }
+
     let result = await productModel.create({
 
         productName: body.productName,
@@ -70,6 +90,7 @@ app.post("/product", async (req, res) => {
         rating: body.rating,
         isFreeShipping: body.isFreeShipping,
         shopName: body.shopName,
+
     }).catch(e => {
         console.log("error in db: ", e);
         res.status(500).send({ message: "db error in saving product" });
@@ -77,15 +98,62 @@ app.post("/product", async (req, res) => {
 
     console.log("result: ", result);
     res.send({ message: "product is added in database" });
-
-
 });
 
-let PORT = process.env.PORT || 3000;
+app.delete("/product/:id", async (req, res) => {
 
+    let _id = req.params.id;
+
+    try {
+        const result = await productModel.findByIdAndDelete(_id);
+        console.log("Deleted product: ", result);
+        res.send({
+            message: "deleted"
+        });
+        return;
+
+    } catch (err) {
+        console.log(err)
+        res.status(500).send({
+            message: "db error"
+        })
+    }
+
+
+
+})
+app.put("/product/:id", async (req, res) => {
+
+    let _id = req.params.id;
+    let body = req.body;
+
+    try {
+        const result = await productModel.findByIdAndUpdate(_id, body);
+        console.log("updated product: ", result);
+        res.send({
+            message: "updated"
+        });
+        return;
+
+    } catch (err) {
+        console.log(err)
+        res.status(500).send({
+            message: "db error"
+        })
+    }
+})
+
+// app.use("/*", (req, res) => {
+//     console.log(" I am * handler");
+//     res.status(404).send("this api doesn't exist");
+// })
+
+
+let PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`app is running on ${PORT}`);
-})
+});
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
